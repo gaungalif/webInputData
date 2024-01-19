@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleInput.css"> 
+    <title>Input Data Pemilih</title>
+</head>
+<body>
+  <header>
+    <h1>Input Data Pemilih</h1>
+  </header>
+  <section class="bio-section">
+    <div class="corner-buttons">
+        <button id="inputDataButton" onclick="location.href='input.html'">Input Data</button>
+        <button id="displayButton" onclick="location.href='display.html'">Display</button>
+        <button id="logoutButton" onclick="location.href='login.html'">Logout</button>
+    </div>
+</section>
+<section class="form-section">
+    <!-- Tabel Data Pemilih -->
+    <form id="inputForm" action="#" method="post">
+        <label for="nama">Nama</label>
+        <input type="text" id="nama" name="nama" required>
+      
+        <label for="noKTP">Nomor KTP</label>
+        <input type="text" id="noKTP" name="noKTP" required>
+      
+        <label for="lingkungan">Lingkungan</label>
+        
+        <select id="kecamatan" name="kecamatan" required style="width: 100%; margin-bottom: 20px;">
+            <option value="ampenan">Ampenan</option>
+            <option value="cakranegara">Cakranegara</option>
+            <option value="mataram">Mataram</option>
+            <option value="sandubaya">Sandubaya</option>
+            <option value="sekarbela">Sekarbela</option>
+            <option value="selaparang">Selaparang</option>
+                        
+        </select>
+        <select id="lingkungan" name="lingkungan" required style="width: 100%;">
+            <option value="lingkungan1">Lingkungan 1</option>
+            <option value="lingkungan2">Lingkungan 2</option>
+            <option value="lingkungan3">Lingkungan 3</option>
+        </select>
+      
+        <label for="koordinator">Koordinator</label>
+        <input type="text" id="koordinator" name="koordinator" required>
+
+        <button type="submit">Submit</button>
+    </form>
+    <p id="success-message" style="color: green;"></p>
+    <script>
+        document.getElementById('inputForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            // Tampilkan pesan bahwa data berhasil ditambahkan
+            var successMessage = document.getElementById('success-message');
+            successMessage.textContent = 'Data berhasil ditambahkan!';
+        
+            // Kembalikan formulir ke keadaan awal
+            document.getElementById('inputForm').reset();
+        });
+    </script>
+  </section>
+ 
+  <footer>
+   
+  </footer>
+</body>
+</html>

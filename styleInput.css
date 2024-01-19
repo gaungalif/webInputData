@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
+
+* {
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #c0c0c0;
+}
+
+header {
+    background-color: #0b0536;
+    color: #fff;
+    text-align: center;
+    padding: 1em;
+}
+
+
+.corner-buttons {
+    position: absolute;
+    top: 80px;
+    left: 10px;
+  }
+  
+  button {
+    padding: 6px;
+    margin-right: 7px;
+    background-color: #ada9a9;
+    color: #000000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+button:hover,
+button:active {
+    background-color: #555;
+}
+
+.form-section, .party-section {
+    margin: 20px;
+}
+
+h2 {
+    color: #333;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul li {
+    margin-bottom: 10px;
+}
+.bio-section {
+    margin: 20px;
+    text-align: center;
+}
+
+form {
+    max-width: 400px;
+    margin: 20px auto; /* Tambahkan margin pada sisi atas dan bawah untuk memberikan ruang */
+    display: flex;
+    flex-direction: column; /* Mengatur tata letak ke vertikal */
+    align-items: center; /* Menengahkan elemen-elemen dalam kolom */
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+}
+
+.form-section button {
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover,
+button:active {
+    background-color: #555;
+}
+
+footer {
+    background-color: #0b0536;
+    color: #fff;
+    text-align: center;
+    padding: 1em;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

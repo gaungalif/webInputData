@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleInput.css"> 
+    <title>Edit Data Pemilih</title>
+</head>
+<body>
+  <header>
+    <h1>Edit Data Pemilih</h1>
+  </header>
+  <section class="bio-section">
+    <div class="corner-buttons">
+        <button id="inputDataButton" onclick="location.href='input.html'">Input Data</button>
+        <button id="displayButton" onclick="location.href='display.html'">Display</button>
+        <button id="logoutButton" onclick="location.href='login.html'">Logout</button>
+    </div>
+</section>
+<section class = "form-section">
+    <!-- Tabel Data Pemilih -->
+    <form id="inputForm" action="#" method="post">
+      <label for="nama">Nama</label>
+      <input type="text" id="nama" name="nama" required>
+      
+      <label for="noKTP">Nomor KTP</label>
+      <input type="text" id="noKTP" name="noKTP" required>
+      
+      <label for="lingkungan">Lingkungan</label>
+      <input type="text" id="lingkungan" name="lingkungan" required>
+      
+      <label for="koordinator">Koordinator</label>
+      <input type="text" id="koordinator" name="koordinator" required>
+
+      <label for="cekKtp">Cek KTP</label>
+      <input type="text" id="cekKtp" name="cekKtp" required>
+
+      <button type="submit">Submit</button>
+    </form>
+  </section>
+ 
+  <footer>
+    
+  </footer>
+</body>
+</html>
