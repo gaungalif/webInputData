@@ -1,6 +1,5 @@
 version: '3'
 services:
-  # Layanan untuk MySQL
   mysql:
     image: mysql:latest
     environment:
@@ -8,6 +7,9 @@ services:
       MYSQL_DATABASE: lbw
       MYSQL_USER: lbw
       MYSQL_PASSWORD: miqlbw02
+    ports:
+      - "3306:3306"
+
 
   # Layanan untuk aplikasi Flask
   web:
