@@ -1,0 +1,20 @@
+version: '3'
+services:
+  # Layanan untuk MySQL
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: lbw
+      MYSQL_USER: lbw
+      MYSQL_PASSWORD: miqlbw02
+
+  # Layanan untuk aplikasi Flask
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+    environment:
+      DATABASE_URI: mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw
