@@ -19,5 +19,5 @@ services:
     depends_on:
       - mysql
     environment:
-      SQLALCHEMY_DATABASE_URI: mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw
+      SQLALCHEMY_DATABASE_URI: "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
       SECRET_KEY: miqlbw02
