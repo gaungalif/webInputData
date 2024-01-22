@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleDisplay.css') }}">
+    <title>Data Pemilih</title>
+
+    <script>
+        function hapusData() {
+            var konfirmasi = confirm("Apakah Anda yakin ingin menghapus data ini?");
+            
+            if (konfirmasi) {
+                // Gantikan dengan panggilan API atau fungsi backend untuk menghapus data dari database
+                // Contoh: fetch('/delete_data?id=' + dataId, { method: 'DELETE' })
+                // Setelah itu, perbarui tabel atau reload halaman jika diperlukan
+            }
+        }
+    </script>
+
+    <script>
+        function navigateTo(route) {
+            window.location.href = route;
+        }
+    </script>
+
+</head>
+<body>
+    <header>
+        <h1>Data Pemilih</h1>
+    </header>
+    <section class="bio-section">
+        <!-- Tombol Input Data dan Display -->
+        <div class="corner-buttons">
+            <button id="inputDataButton" onclick="navigateTo('/input')">Input Data</button>
+            <button id="displayButton" onclick="navigateTo('/')">Display</button>
+            <button id="logoutButton" onclick="navigateTo('/login')">Logout</button>
+        </div>
+
+        <!-- Tabel Data Pemilih -->
+        <h2>Data Pemilih</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NO.</th>
+                    <th>NAMA</th>
+                    <th>NO. KTP</th>
+                    <th>LINGKUNGAN</th>
+                    <th>KOORDINATOR</th>
+                    <th>CEK KTP</th>
+                    <th>JUMLAH</th>
+                    <th>ACTION</th> <!-- Kolom untuk tombol edit dan hapus -->
+                    <!-- Tambahkan kolom header lainnya sesuai kebutuhan -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data pemilih akan diisi melalui backend -->
+                {% for index, pemilih in enumerate(pemilih_list, start=1) %}
+                <tr>
+                    <td>{{ index }}</td>
+                    <td>{{ pemilih.nama }}</td>
+                    <td>{{ pemilih.no_ktp }}</td>
+                    <td>{{ pemilih.kecamatan }} - {{ pemilih.kelurahan }}</td>
+                    <td>{{ pemilih.koordinator }}</td>
+                    <td>null</td>
+                    <td></td>
+                    <td>
+                        <button onclick="location.href='/edit/{{ pemilih.id }}'">Edit</button>
+                        <button class="delete-button" onclick="hapusData()">Hapus</button>
+                    </td>        
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <footer></footer>
+</body>
+</html>

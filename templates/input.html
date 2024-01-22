@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleInput.css') }}">
+    <title>Input Data Pemilih</title>
+</head>
+<body>
+  <header>
+    <h1>Input Data Pemilih</h1>
+  </header>
+  <section class="bio-section">
+    <div class="corner-buttons">
+        <button id="inputDataButton" onclick="navigateTo('/input')">Input Data</button>
+        <button id="displayButton" onclick="navigateTo('/')">Display</button>
+        <button id="logoutButton" onclick="navigateTo('/login')">Logout</button>
+    </div>
+</section>
+<section class="form-section">
+    <!-- Tabel Data Pemilih -->
+    <form id="inputForm" action="#" method="post">
+        <label for="nama">Nama</label>
+        <input type="text" id="nama" name="nama" required>
+      
+        <label for="noKTP">Nomor KTP</label>
+        <input type="text" id="noKTP" name="noKTP" required>
+      
+        <label for="Kecamatan">Kecamatan</label>
+        <select id="Kecamatan" name="Kecamatan" required style="width: 100%; margin-bottom: 20px;" onchange="updateKelurahan()">
+            <option value="Ampenan">Ampenan</option>
+            <option value="Cakranegara">Cakranegara</option>
+            <option value="Mataram">Mataram</option>
+            <option value="Sandubaya">Sandubaya</option>
+            <option value="Sekarbela">Sekarbela</option>
+            <option value="Selaparang">Selaparang</option>
+        </select>
+
+        <label for="Kelurahan">Kelurahan</label>
+        <select id="Kelurahan" name="Kelurahan" required style="width: 100%;">
+            <!-- Opsi Kelurahan akan diisi melalui JavaScript -->
+        </select>
+      
+        <label for="koordinator">Koordinator</label>
+        <input type="text" id="koordinator" name="koordinator" required>
+
+        <button type="submit">Submit</button>
+    </form>
+    <p id="success-message" style="color: green;"></p>
+    <script>
+        document.getElementById('inputForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            // Tampilkan pesan bahwa data berhasil ditambahkan
+            var successMessage = document.getElementById('success-message');
+            successMessage.textContent = 'Data berhasil ditambahkan!';
+        
+            // Kembalikan formulir ke keadaan awal
+            document.getElementById('inputForm').reset();
+        });
+
+        function updateKelurahan() {
+            var KecamatanSelect = document.getElementById('Kecamatan');
+            var KelurahanSelect = document.getElementById('Kelurahan');
+            var selectedKecamatan = KecamatanSelect.value;
+
+            // Hapus opsi Kelurahan yang ada
+            KelurahanSelect.innerHTML = '';
+
+            // Fungsi untuk menambahkan opsi Kelurahan ke elemen select
+            function addOptionsToLingkungan(options) {
+                options.forEach(function (option) {
+                    var optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    KelurahanSelect.appendChild(optionElement);
+                });
+            }
+
+            // Tambahkan opsi Kelurahan berdasarkan Kecamatan yang dipilih
+            switch (selectedKecamatan) {
+                case 'Ampenan':
+                    addOptionsToLingkungan(['Ampenan Selatan', 'Ampenan Tengah', 'Ampenan Utara', 'Banjar', 'Bintaro', 'Dayan Peken', 'Kebun Sari', 'Pajarakan Karya', 'Pejeruk', 'Taman Sari']);
+                    break;
+                case 'Cakranegara':
+                    addOptionsToLingkungan(['Cakranegara Barat', 'Cakranegara Selatan', 'Cakranegara Selatan Baru', 'Cakranegara Timur', 'Cakranegara Utara', 'Cilinaya', 'Karang Taliwang', 'Mayura', 'Sapta Marga', 'Sayang-sayang']);
+                    break;
+                case 'Mataram':
+                    addOptionsToLingkungan(['Mataram Timur', 'Pagesangan', 'Pagesangan Barat', 'Pagesangan Timur', 'Pagutan', 'Pagutan Barat', 'Pagutan Timur', 'Pejanggik', 'Punia']);
+                    break;                                                      
+                case 'Sandubaya':
+                    addOptionsToLingkungan(['Abian Tubuh Baru', 'Babakan', 'Bertais', 'Dasan Cermen', 'Mandalika', 'Selagalas', 'Turida']);
+                    break;
+                case 'Sekarbela':
+                    addOptionsToLingkungan(['Jempong Baru', 'Karang Pule', 'Kekalik Jaya', 'Tanjung Karang', 'Tanjung Karang Permai']);
+                    break;
+                case 'Selaparang':
+                    addOptionsToLingkungan(['Dasan Agung', 'Dasan Agung Baru', 'Gomong', 'Karang Baru', 'Mataram Barat', 'Monjok', 'Monjok Barat', 'Monjok Timur', 'Rembiga']);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        function navigateTo(route) {
+            window.location.href = route;
+        }
+    </script>
+  </section>
+ 
+  <footer>
+   
+  </footer>
+</body>
+</html>

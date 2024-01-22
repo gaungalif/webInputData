@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styleInput.css"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleInput.css') }}">
     <title>Edit Data Pemilih</title>
 </head>
 <body>
@@ -12,9 +12,9 @@
   </header>
   <section class="bio-section">
     <div class="corner-buttons">
-        <button id="inputDataButton" onclick="location.href='input.html'">Input Data</button>
-        <button id="displayButton" onclick="location.href='display.html'">Display</button>
-        <button id="logoutButton" onclick="location.href='login.html'">Logout</button>
+      <button id="inputDataButton" onclick="navigateTo('/input')">Input Data</button>
+      <button id="displayButton" onclick="navigateTo('/')">Display</button>
+      <button id="logoutButton" onclick="navigateTo('/login')">Logout</button>
     </div>
 </section>
 <section class = "form-section">
@@ -44,3 +44,8 @@
   </footer>
 </body>
 </html>
+<script>
+        function navigateTo(route) {
+            window.location.href = route;
+        }
+</script>
