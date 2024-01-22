@@ -12,6 +12,7 @@ def create_app():
         admin_user = User(nama='Admin', email='admin@mail.com', password='admin_password', role='Admin')
         input_user = User(nama='Input', email='input@mail.com', password='input_password', role='Input')
         db.session.add(admin_user)
+        db.session.add(input_user)
         db.session.commit()
 
     return app
