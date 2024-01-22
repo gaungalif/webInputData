@@ -6,13 +6,15 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'  # Ganti dengan URL database yang sesuai
 app.config['SECRET_KEY'] = 'miqlbw02'
 db.init_app(app)
-with app.app_context():
-    db.create_all()
-    admin_user = User(nama='Admin', email='admin@mail.com', password='admin_password', role='Admin')
-    input_user = User(nama='Input', email='input@mail.com', password='input_password', role='Input')
-    db.session.add(admin_user)
-    db.session.commit()
+def create_app():
+    with app.app_context():
+        db.create_all()
+        admin_user = User(nama='Admin', email='admin@mail.com', password='admin_password', role='Admin')
+        input_user = User(nama='Input', email='input@mail.com', password='input_password', role='Input')
+        db.session.add(admin_user)
+        db.session.commit()
 
+    return app
 @app.route('/')
 def home():
     if 'email' in session:
@@ -71,4 +73,5 @@ def login():
 
 
 if __name__ == '__main__':
+    create_app()
     app.run(debug=True, port=5000)
