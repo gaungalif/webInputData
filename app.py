@@ -3,6 +3,8 @@ from models import db, Pemilih, User # Import model Pemilih dari models.py
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
+app.config['SECRET_KEY'] = 'miqlbw02'
 db.init_app(app)
 def create_app():
     with app.app_context():
