@@ -1,30 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styleDisplay.css') }}">
     <title>Data Pemilih</title>
-
-    <script>
-        function hapusData() {
-            var konfirmasi = confirm("Apakah Anda yakin ingin menghapus data ini?");
-            
-            if (konfirmasi) {
-                // Gantikan dengan panggilan API atau fungsi backend untuk menghapus data dari database
-                // Contoh: fetch('/delete_data?id=' + dataId, { method: 'DELETE' })
-                // Setelah itu, perbarui tabel atau reload halaman jika diperlukan
-            }
-        }
-    </script>
-
-    <script>
-        function navigateTo(route) {
-            window.location.href = route;
-        }
-    </script>
-
 </head>
+
 <body>
     <header>
         <h1>Data Pemilih</h1>
@@ -39,7 +22,7 @@
 
         <!-- Tabel Data Pemilih -->
         <h2>Data Pemilih</h2>
-        <table>
+        <table id="pemilihTable">
             <thead>
                 <tr>
                     <th>NO.</th>
@@ -47,32 +30,147 @@
                     <th>NO. KTP</th>
                     <th>LINGKUNGAN</th>
                     <th>KOORDINATOR</th>
-                    <th>CEK KTP</th>
-                    <th>JUMLAH</th>
-                    <th>ACTION</th> <!-- Kolom untuk tombol edit dan hapus -->
-                    <!-- Tambahkan kolom header lainnya sesuai kebutuhan -->
+                    <th>TPS</th>
+                    <th>KETERANGAN</th>
+                    <th>ACTION</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Data pemilih akan diisi melalui backend -->
-                {% for index, pemilih in enumerate(pemilih_list, start=1) %}
-                <tr>
-                    <td>{{ index }}</td>
-                    <td>{{ pemilih.nama }}</td>
-                    <td>{{ pemilih.no_ktp }}</td>
-                    <td>{{ pemilih.kecamatan }} - {{ pemilih.kelurahan }}</td>
-                    <td>{{ pemilih.koordinator }}</td>
-                    <td>null</td>
-                    <td></td>
-                    <td>
-                        <button onclick="location.href='/edit/{{ pemilih.id }}'">Edit</button>
-                        <button class="delete-button" onclick="hapusData()">Hapus</button>
-                    </td>        
-                </tr>
+                {% for pemilih in pemilih_list %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ pemilih.nama }}</td>
+                        <td>{{ pemilih.no_ktp }}</td>
+                        <td>{{ pemilih.kelurahan }}</td>
+                        <td>{{ pemilih.koordinator }}</td>
+                        <td>{{ pemilih.tps or '' }}</td>
+                        <td>{{ pemilih.keterangan or '' }}</td>
+                        <td>
+                            <button onclick="editData('{{ loop.index }}', '{{ pemilih.nama }}', '{{ pemilih.no_ktp }}', '{{ pemilih.kelurahan }}', '{{ pemilih.koordinator }}', '{{ pemilih.tps }}', '{{ pemilih.keterangan }}')">Edit</button>
+                            <button onclick="hapusData('{{ loop.index }}')">Hapus</button>
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
     </section>
     <footer></footer>
+
+    <!-- Pop-up atau modul untuk edit data -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+            <h2>Edit Data</h2>
+            <form id="editForm">
+                <label for="editNama">Nama</label>
+                <input type="text" id="editNama" name="editNama" required disabled>
+    
+                <label for="editNoKTP">Nomor KTP</label>
+                <input type="text" id="editNoKTP" name="editNoKTP" required disabled>
+    
+                <label for="editAlamat">Alamat</label>
+                <input type="text" id="editAlamat" name="editAlamat" required disabled>
+    
+                <label for="editKoordinator">Koordinator</label>
+                <input type="text" id="editKoordinator" name="editKoordinator" required disabled>
+    
+                <label for="editTPS">TPS</label>
+                <input type="text" id="editTPS" name="editTPS" required>
+    
+                <label for="editKeterangan">Keterangan</label>
+                <input type="text" id="editKeterangan" name="editKeterangan" required>
+    
+                <button type="button" onclick="submitEditForm()">Simpan Perubahan</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function editData(index, nama, no_ktp, alamat, koordinator, tps, keterangan) {
+            var editModal = document.getElementById('editModal');
+            editModal.style.display = 'block';
+            tps = tps !== 'None'? tps : '';
+            keterangan = keterangan !== 'None' ? keterangan : '';
+            document.getElementById('editNama').value = nama;
+            document.getElementById('editNoKTP').value = no_ktp;
+            document.getElementById('editAlamat').value = alamat;
+            document.getElementById('editKoordinator').value = koordinator;
+            document.getElementById('editTPS').value = tps;
+            document.getElementById('editKeterangan').value = keterangan;
+    
+            // Menonaktifkan input yang tidak boleh diubah
+            document.getElementById('editNama').disabled = true;
+            document.getElementById('editNoKTP').disabled = true;
+            document.getElementById('editAlamat').disabled = true;
+            document.getElementById('editKoordinator').disabled = true;
+        }
+    
+        function submitEditForm() {
+            var editedNama = document.getElementById('editNama').value;
+            var editedNoKTP = document.getElementById('editNoKTP').value;
+            var editedAlamat = document.getElementById('editAlamat').value;
+            var editedKoordinator = document.getElementById('editKoordinator').value;
+            var editedTPS = document.getElementById('editTPS').value;
+            var editedKeterangan = document.getElementById('editKeterangan').value;
+    
+            var formData = new FormData();
+            formData.append('editedNama', editedNama);
+            formData.append('editedNoKTP', editedNoKTP);
+            formData.append('editedAlamat', editedAlamat);
+            formData.append('editedKoordinator', editedKoordinator);
+            formData.append('editedTPS', editedTPS);
+            formData.append('editedKeterangan', editedKeterangan);
+
+            // Menggunakan fetch untuk mengirim data ke server
+            fetch('/edit/' + editedNoKTP, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Check if the response is HTML
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) {
+                        // Handle HTML response (e.g., redirect or display a message)
+                        window.location.href = response.url; // Redirect to the HTML page
+                    } else {
+                        return response.json(); // Continue with JSON processing if applicable
+                    }
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .then(data => {
+                // Handle the response data if needed
+                console.log('Success:', data);
+            })
+            .catch(error => console.error('Error:', error));
+    
+            var editModal = document.getElementById('editModal');
+            editModal.style.display = 'none';
+        }
+
+        function hapusData(index) {
+            var konfirmasi = confirm("Apakah Anda yakin ingin menghapus data ini?");
+
+            if (konfirmasi) {
+                // Implementasi logika hapus
+                // Gantikan dengan panggilan API atau fungsi backend untuk menghapus data dari database
+                // Contoh: fetch('/delete_data?id=' + index, { method: 'DELETE' })
+                // Setelah itu, perbarui tabel atau reload halaman jika diperlukan
+            }
+        }
+
+        window.onclick = function(event) {
+            var editModal = document.getElementById('editModal');
+            if (event.target == editModal) {
+                editModal.style.display = 'none';
+            }
+        };
+        function navigateTo(route) {
+            window.location.href = route;
+        }
+    </script>
 </body>
+
 </html>

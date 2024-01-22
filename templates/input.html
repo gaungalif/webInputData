@@ -7,57 +7,109 @@
     <title>Input Data Pemilih</title>
 </head>
 <body>
-  <header>
-    <h1>Input Data Pemilih</h1>
-  </header>
-  <section class="bio-section">
-    <div class="corner-buttons">
-        <button id="inputDataButton" onclick="navigateTo('/input')">Input Data</button>
-        <button id="displayButton" onclick="navigateTo('/')">Display</button>
-        <button id="logoutButton" onclick="navigateTo('/login')">Logout</button>
-    </div>
-</section>
-<section class="form-section">
-    <!-- Tabel Data Pemilih -->
-    <form id="inputForm" action="#" method="post">
-        <label for="nama">Nama</label>
-        <input type="text" id="nama" name="nama" required>
-      
-        <label for="noKTP">Nomor KTP</label>
-        <input type="text" id="noKTP" name="noKTP" required>
-      
-        <label for="Kecamatan">Kecamatan</label>
-        <select id="Kecamatan" name="Kecamatan" required style="width: 100%; margin-bottom: 20px;" onchange="updateKelurahan()">
-            <option value="Ampenan">Ampenan</option>
-            <option value="Cakranegara">Cakranegara</option>
-            <option value="Mataram">Mataram</option>
-            <option value="Sandubaya">Sandubaya</option>
-            <option value="Sekarbela">Sekarbela</option>
-            <option value="Selaparang">Selaparang</option>
-        </select>
+    <header>
+        <h1>Input Data Pemilih</h1>
+    </header>
+    <section class="bio-section">
+        <div class="corner-buttons">
+            <button id="inputDataButton" onclick="navigateTo('/input')">Input Data</button>
+            <button id="displayButton" onclick="navigateTo('/')">Display</button>
+            <button id="logoutButton" onclick="navigateTo('/login')">Logout</button>
+        </div>
+    </section>
+    <section class="form-section">
 
-        <label for="Kelurahan">Kelurahan</label>
-        <select id="Kelurahan" name="Kelurahan" required style="width: 100%;">
-            <!-- Opsi Kelurahan akan diisi melalui JavaScript -->
-        </select>
-      
-        <label for="koordinator">Koordinator</label>
-        <input type="text" id="koordinator" name="koordinator" required>
-
-        <button type="submit">Submit</button>
-    </form>
-    <p id="success-message" style="color: green;"></p>
-    <script>
-        document.getElementById('inputForm').addEventListener('submit', function(event) {
-            event.preventDefault(); 
-            // Tampilkan pesan bahwa data berhasil ditambahkan
-            var successMessage = document.getElementById('success-message');
-            successMessage.textContent = 'Data berhasil ditambahkan!';
+        <!-- Tabel Data Pemilih -->
+        <form id="inputForm" action="{{ url_for('input') }}" method="post">
+            <label for="nama">Nama</label>
+            <input type="text" id="nama" name="nama" required>
         
-            // Kembalikan formulir ke keadaan awal
-            document.getElementById('inputForm').reset();
+            <label for="noKTP">Nomor KTP</label>
+            <input type="text" id="noKTP" name="noKTP" required>
+        
+            <label for="Kecamatan">Kecamatan</label>
+            <select id="Kecamatan" name="Kecamatan" required style="width: 100%; margin-bottom: 20px;" onchange="updateKelurahan()">
+                <option value="pilih">PILIH</option>
+                <option value="Ampenan">Ampenan</option>
+                <option value="Cakranegara">Cakranegara</option>
+                <option value="Mataram">Mataram</option>
+                <option value="Sandubaya">Sandubaya</option>
+                <option value="Sekarbela">Sekarbela</option>
+                <option value="Selaparang">Selaparang</option>
+            </select>
+
+            <label for="Kelurahan">Kelurahan</label>
+            <select id="Kelurahan" name="Kelurahan" required style="width: 100%;">
+                <!-- Opsi Kelurahan akan diisi melalui JavaScript -->
+            </select>
+            
+            <label for="koordinator">Koordinator</label>
+            <input type="text" id="koordinator" name="koordinator" required>
+            
+            <button type="submit">Submit</button>
+        </form>
+    </section>
+        <!-- Modal HTML -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <p id="modalMessage"></p>
+            </div>
+        </div>
+    
+    <script>
+        document.getElementById('inputForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Ambil data formulir
+            var formData = new FormData(document.getElementById('inputForm'));
+
+            // Kirim data formulir ke server menggunakan Fetch API
+            fetch('/input', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Tampilkan pesan dari server di dalam modal
+                var modalMessage = document.getElementById('modalMessage');
+                modalMessage.textContent = data.message;
+
+                // Tampilkan modal
+                var modal = document.getElementById('myModal');
+                modal.style.display = 'block';
+
+                // Kembalikan formulir ke keadaan awal jika tidak ada error
+                if (data.success) {
+                    document.getElementById('inputForm').reset();
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
 
+        // Fungsi untuk menutup modal
+        function closeModal() {
+            var modal = document.getElementById('myModal');
+            modal.style.display = 'none';
+        }
+
+
+        // Fungsi untuk menutup modal jika diklik di luar area modal
+        window.onclick = function (event) {
+            var successModal = document.getElementById('myModal');
+            if (event.target == successModal) {
+                successModal.style.display = 'none';
+
+                // Refresh halaman
+                window.location.reload();
+            }
+        };
+
+        // Fungsi untuk menutup modal jika diklik tombol close
+        document.getElementsByClassName('close')[0].onclick = function () {
+            closeModal();
+        };
+    
         function updateKelurahan() {
             var KecamatanSelect = document.getElementById('Kecamatan');
             var KelurahanSelect = document.getElementById('Kelurahan');
@@ -106,7 +158,7 @@
             window.location.href = route;
         }
     </script>
-  </section>
+
  
   <footer>
    
