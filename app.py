@@ -112,7 +112,7 @@ def input():
             else:
                 
                 # Simpan data ke dalam database
-                new_pemilih = Pemilih(nama=nama, no_ktp=no_ktp, kecamatan=kecamatan, kelurahan=kelurahan, koordinator=koordinator,)
+                new_pemilih = Pemilih(nama=nama, no_ktp=no_ktp, kecamatan=kecamatan, kelurahan=kelurahan, koordinator=koordinator,tps=tps)
                 db.session.add(new_pemilih)
                 db.session.commit()
 
