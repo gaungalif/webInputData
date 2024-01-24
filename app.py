@@ -5,8 +5,8 @@ import requests
 
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://root:@localhost/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://root:@localhost/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
 app.config['SECRET_KEY'] = 'miqlbw02'
 db.init_app(app)
 def create_app():
