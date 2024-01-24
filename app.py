@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from models import db, Pemilih, User # Import model Pemilih dari models.py
 from flask_sqlalchemy import SQLAlchemy
+import requests
+
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://root:@localhost/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://root:@localhost/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
 app.config['SECRET_KEY'] = 'miqlbw02'
 db.init_app(app)
 def create_app():
@@ -12,17 +14,23 @@ def create_app():
         db.create_all()
 
         # Cek apakah pengguna Admin dan Input sudah ada
-        admin_user = User.query.filter_by(email='admin@mail.com').first()
-        input_user = User.query.filter_by(email='input@mail.com').first()
-
+        min0 = User.query.filter_by(email='min0').first()
+        min1 = User.query.filter_by(email='min1').first()
+        min2 = User.query.filter_by(email='min2').first()
+        min3 = User.query.filter_by(email='min3').first()
         # Jika tidak ada, tambahkan ke database
-        if not admin_user:
-            admin_user = User(nama='Admin', email='admin@mail.com', password='admin_password', role='Admin')
+        if not min0:
+            admin_user = User(nama='Admin0', email='min0', password='mimin123', role='Admin')
             db.session.add(admin_user)
-
-        if not input_user:
-            input_user = User(nama='Input', email='input@mail.com', password='input_password', role='Input')
-            db.session.add(input_user)
+        if not min1:
+            admin_user = User(nama='Admin1', email='min1', password='mimin123', role='Admin')
+            db.session.add(admin_user)
+        if not min2:
+            admin_user = User(nama='Admin2', email='min2', password='mimin123', role='Admin')
+            db.session.add(admin_user)
+        if not min3:
+            admin_user = User(nama='Admin3', email='min3', password='mimin123', role='Admin')
+            db.session.add(admin_user)   
 
         db.session.commit()
 
@@ -33,31 +41,44 @@ def home():
         # Pengguna sudah login, mungkin diarahkan ke halaman lain
         return redirect(url_for('display'))
     return render_template('login.html')
+  
+@app.route('/cek_ktp/<int:no_ktp>')
+def check_dpt_online(no_ktp):
+    existing_pemilih = Pemilih.query.filter_by(no_ktp=no_ktp).first()
+    if existing_pemilih:
+        # Jika sudah ada, berikan keterangan "DATA SAMA"
+        existing_pemilih.keterangan = 'DATA SAMA'
+        existing_koordinator = existing_pemilih.koordinator
+        db.session.commit()
+        return jsonify({'success': False, 'message': f'Data Sama dengan koordinator {existing_koordinator}'})
+    else:
+        url = "https://cek-dpt-online.p.rapidapi.com/api/v3/check"
+        querystring = {"nik": no_ktp}
+        headers = {
+            # "X-RapidAPI-Key": "511faddf5fmsh9938236d6c2b247p16317bjsnbba1e102c7af",
+            "X-RapidAPI-Key": "95f507feb8msh5fd6388bd26f648p1af532jsnbe2f0dbd12d2",
+            "X-RapidAPI-Host": "cek-dpt-online.p.rapidapi.com"
+        }
 
-# @app.route('/display')
-# def display():
-#     if 'email' in session:
-#         # Ambil data Pemilih dari database
-#         pemilih_list = Pemilih.query.all()
 
-#         # Create a list of dictionaries from the Pemilih objects
-#         pemilih_data = [
-#             {
-#                 'index': index + 1,
-#                 'nama': pemilih.nama,
-#                 'no_ktp': pemilih.no_ktp,
-#                 'alamat': f"{pemilih.kecamatan} - {pemilih.kelurahan}",
-#                 'koordinator': pemilih.koordinator,
-#             }
-#             for index, pemilih in enumerate(pemilih_list)
-#         ]
+        response = requests.get(url, headers=headers, params=querystring)
+        return response.json()
 
-#         # render the template and pass the JSON data as context
-#         return render_template('display.html', pemilih_data=jsonify(pemilih_data))
-#         # return jsonify(pemilih_data)
-#     else:
-#         return redirect(url_for('login'))
+# Route untuk menghapus data
+@app.route('/delete/<int:no_ktp>', methods=['DELETE'])
+def delete_pemilih(no_ktp):
+    if request.method == 'DELETE':
+        pemilih = Pemilih.query.filter_by(no_ktp=no_ktp).first()
 
+        try:
+            db.session.delete(pemilih)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Data berhasil dihapus'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+    else:
+        return redirect(url_for('display'))
 
 @app.route('/display')
 def display():
@@ -79,6 +100,7 @@ def input():
             kecamatan = request.form['Kecamatan']
             kelurahan = request.form['Kelurahan']
             koordinator = request.form['koordinator']
+            tps = request.form['tps']
             existing_pemilih = Pemilih.query.filter_by(no_ktp=no_ktp).first()
             if existing_pemilih:
                 # Jika sudah ada, berikan keterangan "DATA SAMA"
@@ -90,7 +112,7 @@ def input():
             else:
                 
                 # Simpan data ke dalam database
-                new_pemilih = Pemilih(nama=nama, no_ktp=no_ktp, kecamatan=kecamatan, kelurahan=kelurahan, koordinator=koordinator)
+                new_pemilih = Pemilih(nama=nama, no_ktp=no_ktp, kecamatan=kecamatan, kelurahan=kelurahan, koordinator=koordinator,)
                 db.session.add(new_pemilih)
                 db.session.commit()
 

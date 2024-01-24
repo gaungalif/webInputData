@@ -20,7 +20,14 @@
     <section class="form-section">
 
         <!-- Tabel Data Pemilih -->
-        <form id="inputForm" action="{{ url_for('input') }}" method="post">
+        <form id="inputForm" action="{{ url_for('input') }}" method="post" onsubmit="return cekData()">
+
+            <label for="nik">NIK</label>
+            <div>
+                <input type="text" id="nik" name="nik" required>
+                <button type="button" onclick="cekData()">Cek</button>
+            </div>
+        
             <label for="nama">Nama</label>
             <input type="text" id="nama" name="nama" required>
         
@@ -28,24 +35,17 @@
             <input type="text" id="noKTP" name="noKTP" required>
         
             <label for="Kecamatan">Kecamatan</label>
-            <select id="Kecamatan" name="Kecamatan" required style="width: 100%; margin-bottom: 20px;" onchange="updateKelurahan()">
-                <option value="pilih">PILIH</option>
-                <option value="Ampenan">Ampenan</option>
-                <option value="Cakranegara">Cakranegara</option>
-                <option value="Mataram">Mataram</option>
-                <option value="Sandubaya">Sandubaya</option>
-                <option value="Sekarbela">Sekarbela</option>
-                <option value="Selaparang">Selaparang</option>
-            </select>
-
+            <input type="text" id="Kecamatan" name="Kecamatan" required>
+        
             <label for="Kelurahan">Kelurahan</label>
-            <select id="Kelurahan" name="Kelurahan" required style="width: 100%;">
-                <!-- Opsi Kelurahan akan diisi melalui JavaScript -->
-            </select>
-            
+            <input type="text" id="Kelurahan" name="Kelurahan" required>
+        
+            <label for="tps">TPS</label>
+            <input type="text" id="tps" name="tps" required>
+        
             <label for="koordinator">Koordinator</label>
             <input type="text" id="koordinator" name="koordinator" required>
-            
+        
             <button type="submit">Submit</button>
         </form>
     </section>
@@ -110,52 +110,47 @@
             closeModal();
         };
     
-        function updateKelurahan() {
-            var KecamatanSelect = document.getElementById('Kecamatan');
-            var KelurahanSelect = document.getElementById('Kelurahan');
-            var selectedKecamatan = KecamatanSelect.value;
-
-            // Hapus opsi Kelurahan yang ada
-            KelurahanSelect.innerHTML = '';
-
-            // Fungsi untuk menambahkan opsi Kelurahan ke elemen select
-            function addOptionsToLingkungan(options) {
-                options.forEach(function (option) {
-                    var optionElement = document.createElement('option');
-                    optionElement.value = option;
-                    optionElement.textContent = option;
-                    KelurahanSelect.appendChild(optionElement);
-                });
-            }
-
-            // Tambahkan opsi Kelurahan berdasarkan Kecamatan yang dipilih
-            switch (selectedKecamatan) {
-                case 'Ampenan':
-                    addOptionsToLingkungan(['Ampenan Selatan', 'Ampenan Tengah', 'Ampenan Utara', 'Banjar', 'Bintaro', 'Dayan Peken', 'Kebun Sari', 'Pajarakan Karya', 'Pejeruk', 'Taman Sari']);
-                    break;
-                case 'Cakranegara':
-                    addOptionsToLingkungan(['Cakranegara Barat', 'Cakranegara Selatan', 'Cakranegara Selatan Baru', 'Cakranegara Timur', 'Cakranegara Utara', 'Cilinaya', 'Karang Taliwang', 'Mayura', 'Sapta Marga', 'Sayang-sayang']);
-                    break;
-                case 'Mataram':
-                    addOptionsToLingkungan(['Mataram Timur', 'Pagesangan', 'Pagesangan Barat', 'Pagesangan Timur', 'Pagutan', 'Pagutan Barat', 'Pagutan Timur', 'Pejanggik', 'Punia']);
-                    break;                                                      
-                case 'Sandubaya':
-                    addOptionsToLingkungan(['Abian Tubuh Baru', 'Babakan', 'Bertais', 'Dasan Cermen', 'Mandalika', 'Selagalas', 'Turida']);
-                    break;
-                case 'Sekarbela':
-                    addOptionsToLingkungan(['Jempong Baru', 'Karang Pule', 'Kekalik Jaya', 'Tanjung Karang', 'Tanjung Karang Permai']);
-                    break;
-                case 'Selaparang':
-                    addOptionsToLingkungan(['Dasan Agung', 'Dasan Agung Baru', 'Gomong', 'Karang Baru', 'Mataram Barat', 'Monjok', 'Monjok Barat', 'Monjok Timur', 'Rembiga']);
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
         function navigateTo(route) {
             window.location.href = route;
+        }
+
+        function cekData() {
+            var nikInput = document.getElementById('nik').value;
+
+            // Lakukan request ke endpoint /cek_ktp/<no_ktp>
+            fetch(`/cek_ktp/${nikInput}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Cek apakah request sukses
+                    if (data.success) {
+                        // Akses data yang dibutuhkan
+                        var parseData = data.results.parse_data;
+                        var realtimeData = data.results.realtime_data.findNikSidalih;
+
+                        // Isi nilai ke elemen-elemen HTML
+                        document.getElementById('nama').value = realtimeData.nama;
+                        document.getElementById('noKTP').value = nikInput;
+                        document.getElementById('Kecamatan').value = realtimeData.kecamatan;
+                        document.getElementById('Kelurahan').value = realtimeData.kelurahan;
+                        document.getElementById('tps').value = realtimeData.tps;
+                    } else {
+                        // Tampilkan popup jika data sama
+                        var modalMessage = document.getElementById('modalMessage');
+                        modalMessage.textContent = data.message;
+
+                        // Tampilkan modal
+                        var modal = document.getElementById('myModal');
+                        modal.style.display = 'block';
+
+                        // Kembalikan formulir ke keadaan awal
+                        document.getElementById('inputForm').reset();
+                    }
+                })
+                .catch(error => {
+                    // Handle kesalahan fetch
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengambil data dari server');
+                });
         }
     </script>
 

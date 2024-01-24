@@ -18,6 +18,9 @@
             <button id="inputDataButton" onclick="navigateTo('/input')">Input Data</button>
             <button id="displayButton" onclick="navigateTo('/')">Display</button>
             <button id="logoutButton" onclick="navigateTo('/login')">Logout</button>
+            <!-- Tambahkan elemen input untuk pencarian -->
+            <input type="text" id="searchInput" placeholder="Cari data..." oninput="searchData()">
+            <button onclick="searchData()">Cari</button>            
         </div>
 
         <!-- Tabel Data Pemilih -->
@@ -47,7 +50,7 @@
                         <td>{{ pemilih.keterangan or '' }}</td>
                         <td>
                             <button onclick="editData('{{ loop.index }}', '{{ pemilih.nama }}', '{{ pemilih.no_ktp }}', '{{ pemilih.kelurahan }}', '{{ pemilih.koordinator }}', '{{ pemilih.tps }}', '{{ pemilih.keterangan }}')">Edit</button>
-                            <button onclick="hapusData('{{ loop.index }}')">Hapus</button>
+                            <button onclick="hapusData('{{ pemilih.no_ktp }}')">Hapus</button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -84,7 +87,21 @@
             </form>
         </div>
     </div>
-    
+    <!-- Popup sukses -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('successModal').style.display='none'">&times;</span>
+            <p id="successMessage"></p>
+        </div>
+    </div>
+
+    <!-- Popup error -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('errorModal').style.display='none'">&times;</span>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
     <script>
         function editData(index, nama, no_ktp, alamat, koordinator, tps, keterangan) {
             var editModal = document.getElementById('editModal');
@@ -150,15 +167,66 @@
             editModal.style.display = 'none';
         }
 
-        function hapusData(index) {
+        function hapusData(noKTP) {
             var konfirmasi = confirm("Apakah Anda yakin ingin menghapus data ini?");
 
             if (konfirmasi) {
-                // Implementasi logika hapus
-                // Gantikan dengan panggilan API atau fungsi backend untuk menghapus data dari database
-                // Contoh: fetch('/delete_data?id=' + index, { method: 'DELETE' })
-                // Setelah itu, perbarui tabel atau reload halaman jika diperlukan
+                // Kirim permintaan DELETE ke server
+                fetch('/delete/' + noKTP, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    // Tampilkan pesan hasil dari server
+                    if (data.success) {
+                        // Jika berhasil, tampilkan popup data berhasil dihapus
+                        showSuccessPopup(data.message);
+                        // Update tabel atau reload halaman jika diperlukan
+                        console.log(data.message);
+                    } else {
+                        // Jika gagal, tampilkan popup error
+                        showErrorPopup(data.message);
+                        // Tampilkan pesan error di console
+                        console.error(data.message);
+                    }
+                })
+                .catch(error => {
+                    // Handle error dari fetch
+                    console.error('Error:', error);
+                    // Tampilkan popup error
+                    showErrorPopup('Terjadi kesalahan. Mohon coba lagi.');
+                });
             }
+        }
+
+        // Fungsi untuk menampilkan popup sukses
+        function showSuccessPopup(message) {
+            var successModal = document.getElementById('successModal');
+            var successMessage = document.getElementById('successMessage');
+            successMessage.textContent = message;
+            successModal.style.display = 'block';
+
+            // Tambahkan timeout untuk menutup popup setelah beberapa detik
+            setTimeout(function() {
+                successModal.style.display = 'none';
+                
+                // Arahkan halaman ke /display
+                window.location.href = '/display';
+            }, 500);
+        }
+
+        // Fungsi untuk menampilkan popup error
+        function showErrorPopup(message) {
+            var errorModal = document.getElementById('errorModal');
+            var errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorModal.style.display = 'block';
+
+            // Tambahkan timeout untuk menutup popup setelah beberapa detik
+            setTimeout(function() {
+                errorModal.style.display = 'none';
+                
+                // Arahkan halaman ke /display
+                window.location.href = '/display';
+            }, 500);
         }
 
         window.onclick = function(event) {
@@ -170,6 +238,33 @@
         function navigateTo(route) {
             window.location.href = route;
         }
+
+        function searchData() {
+            // Ambil nilai input pencarian
+            var searchValue = document.getElementById('searchInput').value.toLowerCase();
+
+            // Ambil semua baris data dalam tabel
+            var rows = document.querySelectorAll('#pemilihTable tbody tr');
+
+            // Iterasi melalui setiap baris dan sembunyikan yang tidak cocok dengan pencarian
+            rows.forEach(function(row) {
+                var cells = row.getElementsByTagName('td');
+                var matchFound = false;
+
+                // Iterasi melalui setiap sel dan periksa apakah mengandung nilai pencarian
+                for (var i = 1; i < cells.length - 1; i++) {
+                    var cellText = cells[i].textContent.toLowerCase();
+                    if (cellText.includes(searchValue)) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+
+                // Tampilkan atau sembunyikan baris berdasarkan hasil pencarian
+                row.style.display = matchFound ? '' : 'none';
+            });
+        }
+
     </script>
 </body>
 
