@@ -43,35 +43,75 @@ def home():
         return redirect(url_for('display'))
     return render_template('login.html')
   
-@app.route('/cek_data', methods=['POST'])
-def check_data():
+# @app.route('/cek_data', methods=['POST'])
+# def check_data():
+#     data = request.json
+#     nik = data['nik']
+#     koordinator = data['koordinator']
+    
+#     existing_pemilih = Pemilih.query.filter_by(no_ktp=nik).first()
+#     if existing_pemilih and existing_pemilih.koordinator == koordinator and existing_pemilih.tps is (not None or not ''):
+#         return jsonify({'success': False, 'message': f'Data Sudah'})
+    
+#     elif existing_pemilih and existing_pemilih.koordinator != koordinator:
+#         # Jika sudah ada, berikan keterangan "DATA SAMA"
+#         existing_pemilih.keterangan = f'DATA SAMA dengan {koordinator}'
+#         existing_koordinator = existing_pemilih.koordinator
+#         db.session.commit()
+#         return jsonify({'success': False, 'message': f'Data Sama dengan koordinator {existing_koordinator}'})
+#     else:
+#         url = "https://cek-dpt-online.p.rapidapi.com/api/v3/check"
+#         querystring = {"nik": nik}
+#         headers = {
+#             # "X-RapidAPI-Key": "511faddf5fmsh9938236d6c2b247p16317bjsnbba1e102c7af",
+#             "X-RapidAPI-Key": "95f507feb8msh5fd6388bd26f648p1af532jsnbe2f0dbd12d2",
+#             "X-RapidAPI-Host": "cek-dpt-online.p.rapidapi.com"
+#         }
+
+
+#         response = requests.get(url, headers=headers, params=querystring)
+#         return response.json()
+# Endpoint untuk pengecekan data ganda
+@app.route('/cek_data_ganda', methods=['POST'])
+def check_data_ganda():
     data = request.json
     nik = data['nik']
     koordinator = data['koordinator']
-    
+
     existing_pemilih = Pemilih.query.filter_by(no_ktp=nik).first()
-    if existing_pemilih and existing_pemilih.koordinator == koordinator:
-        return jsonify({'success': False, 'message': f'Data Sudah diinput'})
+    if existing_pemilih and existing_pemilih.koordinator == koordinator and existing_pemilih.tps is not None:
+        return jsonify({'success': False, 'message': f'Data Sudah'})
     
     elif existing_pemilih and existing_pemilih.koordinator != koordinator:
-        # Jika sudah ada, berikan keterangan "DATA SAMA"
         existing_pemilih.keterangan = f'DATA SAMA dengan {koordinator}'
         existing_koordinator = existing_pemilih.koordinator
         db.session.commit()
         return jsonify({'success': False, 'message': f'Data Sama dengan koordinator {existing_koordinator}'})
+    
     else:
+        return jsonify({'success': True, 'message': 'Data Tidak Sama'})
+
+# Endpoint untuk pengecekan NIK DPT
+@app.route('/cek_nik_dpt', methods=['POST'])
+def check_nik_dpt():
+    data = request.json
+    nik = data['nik']
+
+    existing_pemilih = Pemilih.query.filter_by(no_ktp=nik).first()
+    if existing_pemilih:
+        return jsonify({'success': False, 'message': 'NIK DPT sudah ada'})
+    
+    else:
+        # Lakukan pengecekan ke API eksternal atau proses lainnya
         url = "https://cek-dpt-online.p.rapidapi.com/api/v3/check"
         querystring = {"nik": nik}
         headers = {
-            # "X-RapidAPI-Key": "511faddf5fmsh9938236d6c2b247p16317bjsnbba1e102c7af",
             "X-RapidAPI-Key": "95f507feb8msh5fd6388bd26f648p1af532jsnbe2f0dbd12d2",
             "X-RapidAPI-Host": "cek-dpt-online.p.rapidapi.com"
         }
-
-
+        
         response = requests.get(url, headers=headers, params=querystring)
         return response.json()
-
 # Route untuk menghapus data
 @app.route('/delete/<int:no_ktp>', methods=['DELETE'])
 def delete_pemilih(no_ktp):
@@ -182,7 +222,7 @@ def login():
         return redirect(url_for('display'))
     else:
         return render_template('login.html', message='Login failed. Username atau Password salah.')
-def update_tps_data_batch(batch_size=10, delay_seconds=2):
+def update_tps_data_batch(batch_size=2, delay_seconds=2):
     # Ambil data pemilih yang belum memiliki TPS
     pemilih_belum_tps = Pemilih.query.filter_by(tps=None).limit(batch_size).all()
 
@@ -195,7 +235,7 @@ def update_tps_data_batch(batch_size=10, delay_seconds=2):
         time.sleep(delay_seconds)
 
         url = "https://cek-dpt-online.p.rapidapi.com/api/v3/check"
-        querystring = {"nik": pemilih.nik}
+        querystring = {"nik": pemilih.no_ktp}
         headers = {
             "X-RapidAPI-Key": "95f507feb8msh5fd6388bd26f648p1af532jsnbe2f0dbd12d2",
             "X-RapidAPI-Host": "cek-dpt-online.p.rapidapi.com"
@@ -208,19 +248,30 @@ def update_tps_data_batch(batch_size=10, delay_seconds=2):
         pemilih.nama = data_api.get('nama', pemilih.nama)
         pemilih.kecamatan = data_api.get('kecamatan', pemilih.kecamatan)
         pemilih.kelurahan = data_api.get('kelurahan', pemilih.kelurahan)
-        pemilih.tps = data_api.get('tps', pemilih.tps)
+        if 'results' in data_api:
+            # Periksa apakah 'realtime_data' ada dalam response
+            realtime_data = data_api['results'].get('realtime_data')
+            if realtime_data:
+                # Periksa apakah 'findNikSidalih' ada dalam response
+                findNikSidalih = realtime_data.get('findNikSidalih')
+                if findNikSidalih:
+                    # Periksa apakah 'tps' ada dalam response
+                    pemilih.tps = findNikSidalih.get('tps', pemilih.tps)
+                else:
+                    # Jika valid = false, ganti nilai tps dengan "cek"
+                    pemilih.tps = "cek dpt"
 
         # Tambahkan perubahan ke list
         perubahan_data.append({
-            'nik': pemilih.nik,
+            'nik': pemilih.no_ktp,
             'nama': pemilih.nama,
             'kecamatan': pemilih.kecamatan,
             'kelurahan': pemilih.kelurahan,
             'tps': pemilih.tps
         })
+        db.session.commit()
 
     # Commit perubahan ke database
-    db.session.commit()
 
     return jsonify({'success': True, 'message': 'Data TPS telah diperbarui', 'perubahan_data': perubahan_data})
 

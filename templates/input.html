@@ -21,16 +21,22 @@
 
         <!-- Tabel Data Pemilih -->
         <form id="inputForm" action="{{ url_for('input') }}" method="post" onsubmit="return cekData()">
+            <label for="nik">NIK:</label>
+            <input type="text" id="nik" name="nik">
+    
+            <label for="koordinator">Koordinator:</label>
+            <input type="text" id="koordinator" name="koordinator">
+    
+            <!-- Pilihan untuk jenis pengecekan -->
+            <label>Jenis Pengecekan:</label>
+            <select id="jenisPengecekan" name="jenisPengecekan">
+                <option value="ganda">Data Ganda</option>
+                <option value="nik_dpt">NIK DPT</option>
+            </select>
+    
+            <!-- Tombol untuk menjalankan pengecekan -->
+            <button type="button" onclick="cekData()">Cek Data</button>
 
-            <label for="cekdata">CEK DATA</label>
-            <div>
-                <label for="nik">NIK</label>
-                <input type="text" id="nik" name="nik" required>
-                <label for="koordinator">KOORDINATOR</label>
-                <input type="text" id="koordinator" name="koordinator" required>
-                <button type="button" onclick="cekData()">Cek</button>
-            </div>
-        
             <label for="nama">Nama</label>
             <input type="text" id="nama" name="nama" required>
         
@@ -120,9 +126,12 @@
         function cekData() {
             var nikInput = document.getElementById('nik').value;
             var koordinatorInput = document.getElementById('koordinator').value;
+            var jenisPengecekan = document.getElementById('jenisPengecekan').value;
 
-            // Lakukan request ke endpoint /cek_data
-            fetch('/cek_data', {
+            // Lakukan request ke endpoint sesuai jenis pengecekan
+            var endpoint = (jenisPengecekan === 'ganda') ? '/cek_data_ganda' : '/cek_nik_dpt';
+
+            fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,50 +143,21 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Cek apakah request sukses
+                // Handle respons sesuai kebutuhan
                 if (data.success) {
-                    // Akses data yang dibutuhkan
-                    var parseData = data.results.parse_data;
-                    var realtimeData = data.results.realtime_data.findNikSidalih;
-
-                    // Isi nilai ke elemen-elemen HTML
-                    document.getElementById('nama').value = realtimeData.nama;
-                    document.getElementById('noKTP').value = nikInput;
-                    document.getElementById('Kecamatan').value = realtimeData.kecamatan;
-                    document.getElementById('Kelurahan').value = realtimeData.kelurahan;
-                    document.getElementById('tps').value = realtimeData.tps;
-
-                    // Tampilkan popup jika data sama
-                    if (!data.success) {
-                        var modalMessage = document.getElementById('modalMessage');
-                        modalMessage.textContent = data.message;
-
-                        // Tampilkan modal
-                        var modal = document.getElementById('myModal');
-                        modal.style.display = 'block';
-
-                        // Kembalikan formulir ke keadaan awal
-                        document.getElementById('inputForm').reset();
-                    }
+                    // Tampilkan data dalam alert
+                    alert(data.message);
                 } else {
-                    // Tampilkan popup jika data sudah diinput
-                    var modalMessage = document.getElementById('modalMessage');
-                    modalMessage.textContent = data.message;
-
-                    // Tampilkan modal
-                    var modal = document.getElementById('myModal');
-                    modal.style.display = 'block';
-
-                    // Kembalikan formulir ke keadaan awal
-                    document.getElementById('inputForm').reset();
+                    // Tampilkan pesan error dalam alert
+                    alert('Terjadi kesalahan: ' + data.message);
                 }
             })
             .catch(error => {
-                // Handle kesalahan fetch
                 console.error('Error:', error);
                 alert('Terjadi kesalahan saat mengambil data dari server');
             });
         }
+
     </script>
 
  
