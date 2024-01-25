@@ -2,11 +2,12 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from models import db, Pemilih, User # Import model Pemilih dari models.py
 from flask_sqlalchemy import SQLAlchemy
 import requests
+import time
 
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://root:@localhost/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://lbw:miqlbw02@mysql/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"  # Ganti dengan URL database yang sesuai
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://root:@localhost/lbw?charset=utf8mb4&collation=utf8mb4_general_ci"
 app.config['SECRET_KEY'] = 'miqlbw02'
 db.init_app(app)
 def create_app():
@@ -42,18 +43,25 @@ def home():
         return redirect(url_for('display'))
     return render_template('login.html')
   
-@app.route('/cek_ktp/<int:no_ktp>')
-def check_dpt_online(no_ktp):
-    existing_pemilih = Pemilih.query.filter_by(no_ktp=no_ktp).first()
-    if existing_pemilih:
+@app.route('/cek_data', methods=['POST'])
+def check_data():
+    data = request.json
+    nik = data['nik']
+    koordinator = data['koordinator']
+    
+    existing_pemilih = Pemilih.query.filter_by(no_ktp=nik).first()
+    if existing_pemilih and existing_pemilih.koordinator == koordinator:
+        return jsonify({'success': False, 'message': f'Data Sudah diinput'})
+    
+    elif existing_pemilih and existing_pemilih.koordinator != koordinator:
         # Jika sudah ada, berikan keterangan "DATA SAMA"
-        existing_pemilih.keterangan = 'DATA SAMA'
+        existing_pemilih.keterangan = f'DATA SAMA dengan {koordinator}'
         existing_koordinator = existing_pemilih.koordinator
         db.session.commit()
         return jsonify({'success': False, 'message': f'Data Sama dengan koordinator {existing_koordinator}'})
     else:
         url = "https://cek-dpt-online.p.rapidapi.com/api/v3/check"
-        querystring = {"nik": no_ktp}
+        querystring = {"nik": nik}
         headers = {
             # "X-RapidAPI-Key": "511faddf5fmsh9938236d6c2b247p16317bjsnbba1e102c7af",
             "X-RapidAPI-Key": "95f507feb8msh5fd6388bd26f648p1af532jsnbe2f0dbd12d2",
@@ -174,6 +182,52 @@ def login():
         return redirect(url_for('display'))
     else:
         return render_template('login.html', message='Login failed. Username atau Password salah.')
+def update_tps_data_batch(batch_size=10, delay_seconds=2):
+    # Ambil data pemilih yang belum memiliki TPS
+    pemilih_belum_tps = Pemilih.query.filter_by(tps=None).limit(batch_size).all()
+
+    # List untuk menyimpan perubahan
+    perubahan_data = []
+
+    # Loop melalui setiap pemilih
+    for pemilih in pemilih_belum_tps:
+        # Request data dari API dengan delay
+        time.sleep(delay_seconds)
+
+        url = "https://cek-dpt-online.p.rapidapi.com/api/v3/check"
+        querystring = {"nik": pemilih.nik}
+        headers = {
+            "X-RapidAPI-Key": "95f507feb8msh5fd6388bd26f648p1af532jsnbe2f0dbd12d2",
+            "X-RapidAPI-Host": "cek-dpt-online.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        data_api = response.json()
+
+        # Update data di database berdasarkan response dari API
+        pemilih.nama = data_api.get('nama', pemilih.nama)
+        pemilih.kecamatan = data_api.get('kecamatan', pemilih.kecamatan)
+        pemilih.kelurahan = data_api.get('kelurahan', pemilih.kelurahan)
+        pemilih.tps = data_api.get('tps', pemilih.tps)
+
+        # Tambahkan perubahan ke list
+        perubahan_data.append({
+            'nik': pemilih.nik,
+            'nama': pemilih.nama,
+            'kecamatan': pemilih.kecamatan,
+            'kelurahan': pemilih.kelurahan,
+            'tps': pemilih.tps
+        })
+
+    # Commit perubahan ke database
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Data TPS telah diperbarui', 'perubahan_data': perubahan_data})
+
+# Buat route untuk melakukan perubahan pada data
+@app.route('/update_tps_data')
+def update_tps_data():
+    return update_tps_data_batch()
 
 
 if __name__ == '__main__':

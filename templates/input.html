@@ -22,9 +22,12 @@
         <!-- Tabel Data Pemilih -->
         <form id="inputForm" action="{{ url_for('input') }}" method="post" onsubmit="return cekData()">
 
-            <label for="nik">NIK</label>
+            <label for="cekdata">CEK DATA</label>
             <div>
+                <label for="nik">NIK</label>
                 <input type="text" id="nik" name="nik" required>
+                <label for="koordinator">KOORDINATOR</label>
+                <input type="text" id="koordinator" name="koordinator" required>
                 <button type="button" onclick="cekData()">Cek</button>
             </div>
         
@@ -116,25 +119,36 @@
 
         function cekData() {
             var nikInput = document.getElementById('nik').value;
+            var koordinatorInput = document.getElementById('koordinator').value;
 
-            // Lakukan request ke endpoint /cek_ktp/<no_ktp>
-            fetch(`/cek_ktp/${nikInput}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Cek apakah request sukses
-                    if (data.success) {
-                        // Akses data yang dibutuhkan
-                        var parseData = data.results.parse_data;
-                        var realtimeData = data.results.realtime_data.findNikSidalih;
+            // Lakukan request ke endpoint /cek_data
+            fetch('/cek_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nik: nikInput,
+                    koordinator: koordinatorInput,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Cek apakah request sukses
+                if (data.success) {
+                    // Akses data yang dibutuhkan
+                    var parseData = data.results.parse_data;
+                    var realtimeData = data.results.realtime_data.findNikSidalih;
 
-                        // Isi nilai ke elemen-elemen HTML
-                        document.getElementById('nama').value = realtimeData.nama;
-                        document.getElementById('noKTP').value = nikInput;
-                        document.getElementById('Kecamatan').value = realtimeData.kecamatan;
-                        document.getElementById('Kelurahan').value = realtimeData.kelurahan;
-                        document.getElementById('tps').value = realtimeData.tps;
-                    } else {
-                        // Tampilkan popup jika data sama
+                    // Isi nilai ke elemen-elemen HTML
+                    document.getElementById('nama').value = realtimeData.nama;
+                    document.getElementById('noKTP').value = nikInput;
+                    document.getElementById('Kecamatan').value = realtimeData.kecamatan;
+                    document.getElementById('Kelurahan').value = realtimeData.kelurahan;
+                    document.getElementById('tps').value = realtimeData.tps;
+
+                    // Tampilkan popup jika data sama
+                    if (!data.success) {
                         var modalMessage = document.getElementById('modalMessage');
                         modalMessage.textContent = data.message;
 
@@ -145,12 +159,24 @@
                         // Kembalikan formulir ke keadaan awal
                         document.getElementById('inputForm').reset();
                     }
-                })
-                .catch(error => {
-                    // Handle kesalahan fetch
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat mengambil data dari server');
-                });
+                } else {
+                    // Tampilkan popup jika data sudah diinput
+                    var modalMessage = document.getElementById('modalMessage');
+                    modalMessage.textContent = data.message;
+
+                    // Tampilkan modal
+                    var modal = document.getElementById('myModal');
+                    modal.style.display = 'block';
+
+                    // Kembalikan formulir ke keadaan awal
+                    document.getElementById('inputForm').reset();
+                }
+            })
+            .catch(error => {
+                // Handle kesalahan fetch
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengambil data dari server');
+            });
         }
     </script>
 
